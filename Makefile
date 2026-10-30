@@ -1,4 +1,5 @@
 PYTHON = uv run python
+MAIN = -m src
 
 # manage the unzip file
 DATA_ZIP = vllm-0.10.1.zip
@@ -32,6 +33,9 @@ $(RAW_DIR)/$(DATA_NAME): $(DATA_ZIP)
 
 install:
 	uv sync
+
+run:
+	$(PYTHON) $(MAIN)
 
 clean:
 	rm -rf $(RAW_DIR)
