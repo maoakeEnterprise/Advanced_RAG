@@ -121,16 +121,22 @@ class CorpusLoader:
     @staticmethod
     def classify(path: Path) -> tuple[FileType, str]:
         extension = path.suffix.lower()
-        special_dir = SPECIAL_DIRS.get(path.parent.name, None)
+        special_dir = SPECIAL_DIRS.get(path.parent.name)
         if special_dir:
             return special_dir
-        special = SPECIAL_FILENAMES.get(path.name, None)
+        special = SPECIAL_FILENAMES.get(path.name)
         if special:
             return special
-        special = SPECIAL_PREFIXES.get(path.name, None)
+        special = SPECIAL_PREFIXES.get(path.stem)
         if special:
             return special
-        return EXTENSIONS.get(extension, "unknow")
+        normal = EXTENSIONS.get(extension)
+        if normal:
+            return normal
+        if extension != "":
+            return EXTENSIONS.get(extension, (FileType.OTHER,
+                                              extension.split(".")[-1]))
+        return EXTENSIONS.get(extension, (FileType.OTHER, "unknown"))
 
     @staticmethod
     def is_test(rel: str) -> bool:
