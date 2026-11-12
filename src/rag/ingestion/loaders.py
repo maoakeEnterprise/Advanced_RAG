@@ -1,4 +1,6 @@
 from pathlib import Path
+import ast
+from types import EllipsisType
 from src.rag.ingestion.models import (SourceFile,
                                       ExcludedFile,
                                       FileType)
@@ -88,6 +90,11 @@ SPECIAL_PREFIXES: dict[str, tuple[FileType, str]] = {
 SPECIAL_DIRS: dict[str, tuple[FileType, str]] = {
     "requirements": (FileType.CONFIG, "requirements"),
 }
+TEST_DIR_FILE = frozenset({
+    "test",
+    "tests",
+    "conftest.py"
+})
 
 
 class CorpusLoader:
@@ -141,21 +148,27 @@ class CorpusLoader:
     @staticmethod
     def is_test(rel: str) -> bool:
         for s in [s for s in rel.split("/")]:
-            if s.startswith("test_") or s.endswith("_test"):
+            if (
+                s.startswith("test_") or
+               s in TEST_DIR_FILE
+               ):
                 return True
         return False
 
     @staticmethod
     def _is_trivial_init(content: str) -> bool:
-        format_one = content.split("\n")
-        tmp_list: list[str] = []
-        for line in format_one:
-            tmp_list.append(line.split["#"][0])
-        tmp_txt = "\n".join(tmp_list)
-        first_clear = tmp_txt.split["\"\"\""]
-        tmp_list: list[str] = []
-        for index, element in enumerate(first_clear):
-            if index % 2 == 0:
-                tmp_list.append(element)
-        tmp_txt = "\n".join(tmp_list)
-        return any(c.isalpha() for c in tmp_txt)
+        try:
+            tree = ast.parse(content)
+            return all(CorpusLoader._is_decorative(node) for node in tree.body)
+        except SyntaxError:
+            return False
+
+    @staticmethod
+    def _is_decorative(node: ast.stmt) -> bool:
+        if isinstance(node, ast.Pass):
+            return True
+        if (isinstance(node, ast.Expr) and
+           isinstance(node.value, ast.Constant) and
+           isinstance(node.value.value, (str, EllipsisType))):
+            return True
+        return False
