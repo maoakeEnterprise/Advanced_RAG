@@ -5,6 +5,9 @@ from src.rag.ingestion.models import (SourceFile,
                                       ExcludedFile,
                                       FileType)
 
+
+SNIFF_SIZE = 8000
+
 EXCLUDED = {
     "build_artifact": frozenset({
         ".git",
@@ -113,7 +116,38 @@ class CorpusLoader:
                 self._load_file(path, relative_path)
 
     def _load_file(self, path: Path, rel: str) -> SourceFile | str:
-        pass
+        is_exclude_step_one = self._path_exclusion(rel)
+        if is_exclude_step_one:
+            return is_exclude_step_one
+        size_bytes = path.stat().st_size
+        if size_bytes > self.max_bytes:
+            return "too_large"
+        raw = path.read_bytes()
+        head = raw[:SNIFF_SIZE]
+        if b"\x00" in head:
+            return "binary"
+        try:
+            content = raw.decode(encoding="utf-8")
+        except UnicodeDecodeError:
+            return "encoding"
+        if not content.strip():
+            return "empty"
+        filetype, language = self.classify(path=path)
+        if (path.name == "__init__.py" and
+           self._is_trivial_init(content=content)):
+            return "trivial_init"
+        segments = rel.split("/")
+        return SourceFile(
+            source=rel,
+            type=filetype,
+            language=language,
+            top_dir=segments[0] if len(segments) > 1 else ".",
+            is_test=self.is_test(rel=rel),
+            size_bytes=size_bytes,
+            n_lines=len(content.splitlines(keepends=True)),
+            n_tokens=0,
+            content=content
+        )
 
     def _path_exclusion(self, rel: str) -> str | None:
         list_rel = rel.split("/")
