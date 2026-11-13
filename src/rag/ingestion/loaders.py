@@ -108,7 +108,7 @@ class CorpusLoader:
     def load(self) -> tuple[list[SourceFile], list[ExcludedFile]]:
         source_files: list[SourceFile] = []
         excluded_files: list[ExcludedFile] = []
-        if not self.path_root.exists():
+        if not self.path_root.is_dir():
             raise FileNotFoundError(
                 "The path file do not exist maybe you need to unzip the file"
             )
