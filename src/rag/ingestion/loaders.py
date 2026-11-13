@@ -106,14 +106,26 @@ class CorpusLoader:
         self.max_bytes = max_bytes
 
     def load(self) -> tuple[list[SourceFile], list[ExcludedFile]]:
+        source_files: list[SourceFile] = []
+        excluded_files: list[ExcludedFile] = []
         if not self.path_root.exists():
             raise FileNotFoundError(
                 "The path file do not exist maybe you need to unzip the file"
             )
         for path in (sorted(self.path_root.rglob("*"))):
             if path.is_file():
-                relative_path = path.relative_to(self.path_root).as_posix()
-                self._load_file(path, relative_path)
+                rel = path.relative_to(self.path_root).as_posix()
+                res = self._load_file(path, rel)
+                if isinstance(res, SourceFile):
+                    source_files.append(res)
+                else:
+                    excluded_files.append(
+                        ExcludedFile(
+                            source=rel,
+                            reason=res
+                        )
+                    )
+        return (source_files, excluded_files)
 
     def _load_file(self, path: Path, rel: str) -> SourceFile | str:
         is_exclude_step_one = self._path_exclusion(rel)
