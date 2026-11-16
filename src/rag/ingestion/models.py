@@ -11,7 +11,7 @@ class FileType(StrEnum):
 
 
 class ReasonType(StrEnum):
-    BUILD_ARTEFACT = "build_artifact"
+    BUILD_ARTIFACT = "build_artifact"
     VENDORED = "vendored"
     TEST_DIR = "test_dir"
     TOO_LARGE = "too_large"

@@ -148,7 +148,7 @@ class CorpusLoader:
         filetype, language = self.classify(path=path)
         if (path.name == "__init__.py" and
            self._is_trivial_init(content=content)):
-            return "trivial_init"
+            return ReasonType.TRIVIAL_INIT
         segments = rel.split("/")
         return SourceFile(
             source=rel,
@@ -169,7 +169,7 @@ class CorpusLoader:
                 if s in element_in:
                     return reason
             if s.endswith(".egg-info"):
-                return ReasonType.BUILD_ARTEFACT
+                return ReasonType.BUILD_ARTIFACT
         return None
 
     @staticmethod

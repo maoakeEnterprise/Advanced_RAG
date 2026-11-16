@@ -13,8 +13,8 @@ def print_loaded_file(files: tuple[list[SourceFile], list[ExcludedFile]]
     source, exclude = files
     for file in source:
         typefile[file.type] += 1
-    for file in exclude:
-        reason_file[file.reason] += 1
+    for file2 in exclude:
+        reason_file[file2.reason] += 1
     for file_t, number in typefile.items():
         print("=============================")
         print(f"FileType: {file_t}")
