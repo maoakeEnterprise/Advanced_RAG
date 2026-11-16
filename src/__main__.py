@@ -1,12 +1,15 @@
 from src.rag.ingestion.loaders import CorpusLoader
 from src.rag.ingestion.models import (SourceFile, ExcludedFile,
-                                      FileType, ReasonTYpe)
+                                      FileType, ReasonType)
+
+
+EMBEDDING = "Qwen/Qwen3-Embedding-0.6B"
 
 
 def print_loaded_file(files: tuple[list[SourceFile], list[ExcludedFile]]
                       ) -> None:
     typefile = {name: 0 for name in FileType}
-    reason_file = {name: 0 for name in ReasonTYpe}
+    reason_file = {name: 0 for name in ReasonType}
     source, exclude = files
     for file in source:
         typefile[file.type] += 1

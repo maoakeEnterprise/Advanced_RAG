@@ -4,7 +4,7 @@ from types import EllipsisType
 from src.rag.ingestion.models import (SourceFile,
                                       ExcludedFile,
                                       FileType,
-                                      ReasonTYpe,)
+                                      ReasonType,)
 
 
 SNIFF_SIZE = 8000
@@ -128,23 +128,23 @@ class CorpusLoader:
                     )
         return (source_files, excluded_files)
 
-    def _load_file(self, path: Path, rel: str) -> SourceFile | ReasonTYpe:
+    def _load_file(self, path: Path, rel: str) -> SourceFile | ReasonType:
         is_exclude_step_one = self._path_exclusion(rel)
         if is_exclude_step_one:
             return is_exclude_step_one
         size_bytes = path.stat().st_size
         if size_bytes > self.max_bytes:
-            return ReasonTYpe.TOO_LARGE
+            return ReasonType.TOO_LARGE
         raw = path.read_bytes()
         head = raw[:SNIFF_SIZE]
         if b"\x00" in head:
-            return ReasonTYpe.BINARY
+            return ReasonType.BINARY
         try:
             content = raw.decode(encoding="utf-8")
         except UnicodeDecodeError:
-            return ReasonTYpe.ENCODING
+            return ReasonType.ENCODING
         if not content.strip():
-            return ReasonTYpe.EMPTY
+            return ReasonType.EMPTY
         filetype, language = self.classify(path=path)
         if (path.name == "__init__.py" and
            self._is_trivial_init(content=content)):
@@ -162,14 +162,14 @@ class CorpusLoader:
             content=content
         )
 
-    def _path_exclusion(self, rel: str) -> ReasonTYpe | None:
+    def _path_exclusion(self, rel: str) -> ReasonType | None:
         list_rel = rel.split("/")
         for s in list_rel:
             for reason, element_in in EXCLUDED.items():
                 if s in element_in:
                     return reason
             if s.endswith(".egg-info"):
-                return ReasonTYpe.BUILD_ARTEFACT
+                return ReasonType.BUILD_ARTEFACT
         return None
 
     @staticmethod

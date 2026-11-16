@@ -10,7 +10,7 @@ class FileType(StrEnum):
     OTHER = "other"
 
 
-class ReasonTYpe(StrEnum):
+class ReasonType(StrEnum):
     BUILD_ARTEFACT = "build_artifact"
     VENDORED = "vendored"
     TEST_DIR = "test_dir"
@@ -35,7 +35,7 @@ class SourceFile(BaseModel):
 
 class ExcludedFile(BaseModel):
     source: str
-    reason: ReasonTYpe
+    reason: ReasonType
 
 
 class Chunk(BaseModel):
