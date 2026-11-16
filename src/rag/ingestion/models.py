@@ -10,6 +10,17 @@ class FileType(StrEnum):
     OTHER = "other"
 
 
+class ReasonTYpe(StrEnum):
+    BUILD_ARTEFACT = "build_artifact"
+    VENDORED = "vendored"
+    TEST_DIR = "test_dir"
+    TOO_LARGE = "too_large"
+    BINARY = "binary"
+    ENCODING = "encoding"
+    EMPTY = "empty"
+    TRIVIAL_INIT = "trivial_init"
+
+
 class SourceFile(BaseModel):
     source: str
     type: FileType
@@ -24,7 +35,7 @@ class SourceFile(BaseModel):
 
 class ExcludedFile(BaseModel):
     source: str
-    reason: str
+    reason: ReasonTYpe
 
 
 class Chunk(BaseModel):

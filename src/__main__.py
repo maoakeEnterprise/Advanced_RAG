@@ -1,8 +1,31 @@
 from src.rag.ingestion.loaders import CorpusLoader
+from src.rag.ingestion.models import (SourceFile, ExcludedFile,
+                                      FileType, ReasonTYpe)
+
+
+def print_loaded_file(files: tuple[list[SourceFile], list[ExcludedFile]]
+                      ) -> None:
+    typefile = {name: 0 for name in FileType}
+    reason_file = {name: 0 for name in ReasonTYpe}
+    source, exclude = files
+    for file in source:
+        typefile[file.type] += 1
+    for file in exclude:
+        reason_file[file.reason] += 1
+    for file_t, number in typefile.items():
+        print("=============================")
+        print(f"FileType: {file_t}")
+        print(f"Number: {number}")
+    print("=============================\n")
+    print("EXCLUDED FILE")
+    for name, number in reason_file.items():
+        print("=============================")
+        print(f"Reason: {name}")
+        print(f"Number: {number}")
 
 
 if __name__ == "__main__":
     root = "data/raw/vllm-0.10.1"
     corpusLoader = CorpusLoader(root)
-    corpusLoader.load()
-    print("Hello World")
+    files = corpusLoader.load()
+    print_loaded_file(files=files)
