@@ -9,8 +9,8 @@ from src.rag.ingestion.models import (SourceFile,
 
 SNIFF_SIZE = 8000
 
-EXCLUDED = {
-    "build_artifact": frozenset({
+EXCLUDED: dict[ReasonType, str] = {
+    ReasonType.BUILD_ARTIFACT: frozenset({
         ".git",
         "__pycache__",
         "node_modules",
@@ -20,7 +20,7 @@ EXCLUDED = {
         ".tox",
         ".mypy_cache"
         }),
-    "vendored": frozenset({
+    ReasonType.VENDORED: frozenset({
         "third_party",
         "vendor",
         "vendored",
@@ -28,7 +28,7 @@ EXCLUDED = {
         "extern",
         "3rdparty"
     }),
-    "test_dir": frozenset({
+    ReasonType.TEST_DIR: frozenset({
         "fixtures",
         "testdata",
         "test_data"

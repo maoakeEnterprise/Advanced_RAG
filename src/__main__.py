@@ -1,6 +1,7 @@
 from src.rag.ingestion.loaders import CorpusLoader
 from src.rag.ingestion.models import (SourceFile, ExcludedFile,
                                       FileType, ReasonType)
+from src.rag.ingestion.tokenizer import TokenCounter
 
 
 EMBEDDING = "Qwen/Qwen3-Embedding-0.6B"
@@ -30,5 +31,10 @@ def print_loaded_file(files: tuple[list[SourceFile], list[ExcludedFile]]
 if __name__ == "__main__":
     root = "data/raw/vllm-0.10.1"
     corpusLoader = CorpusLoader(root)
-    files = corpusLoader.load()
-    print_loaded_file(files=files)
+    tokenCounter = TokenCounter(model_name=EMBEDDING)
+    sources_files, excluded = corpusLoader.load()
+    print_loaded_file(files=(sources_files, excluded))
+    contents = [sourcefile.content for sourcefile in sources_files[0]]
+    batch_count = tokenCounter.count_batch(texts=contents)
+    for sourcefile, n in zip(sources_files, batch_count):
+        sourcefile.n_tokens = n
