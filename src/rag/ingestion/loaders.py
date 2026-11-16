@@ -9,7 +9,7 @@ from src.rag.ingestion.models import (SourceFile,
 
 SNIFF_SIZE = 8000
 
-EXCLUDED: dict[ReasonType, str] = {
+EXCLUDED: dict[ReasonType, frozenset[str]] = {
     ReasonType.BUILD_ARTIFACT: frozenset({
         ".git",
         "__pycache__",
@@ -35,7 +35,7 @@ EXCLUDED: dict[ReasonType, str] = {
     })
 }
 # Extension (lowercase) -> (type, language)
-EXTENSIONS: dict[str, tuple[FileType, frozenset[str]]] = {
+EXTENSIONS: dict[str, tuple[FileType, str]] = {
     # Python
     ".py": (FileType.CODE_PYTHON, "python"),
     ".pyi": (FileType.CODE_PYTHON, "python"),
