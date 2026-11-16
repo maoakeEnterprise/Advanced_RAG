@@ -35,7 +35,7 @@ EXCLUDED: dict[ReasonType, str] = {
     })
 }
 # Extension (lowercase) -> (type, language)
-EXTENSIONS: dict[str, tuple[FileType, str]] = {
+EXTENSIONS: dict[str, tuple[FileType, frozenset[str]]] = {
     # Python
     ".py": (FileType.CODE_PYTHON, "python"),
     ".pyi": (FileType.CODE_PYTHON, "python"),

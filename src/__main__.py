@@ -32,9 +32,9 @@ if __name__ == "__main__":
     root = "data/raw/vllm-0.10.1"
     corpusLoader = CorpusLoader(root)
     tokenCounter = TokenCounter(model_name=EMBEDDING)
-    sources_files, excluded = corpusLoader.load()
-    print_loaded_file(files=(sources_files, excluded))
-    contents = [sourcefile.content for sourcefile in sources_files[0]]
+    source_files, excluded = corpusLoader.load()
+    print_loaded_file(files=(source_files, excluded))
+    contents = [sourcefile.content for sourcefile in source_files]
     batch_count = tokenCounter.count_batch(texts=contents)
-    for sourcefile, n in zip(sources_files, batch_count):
+    for sourcefile, n in zip(source_files, batch_count):
         sourcefile.n_tokens = n
