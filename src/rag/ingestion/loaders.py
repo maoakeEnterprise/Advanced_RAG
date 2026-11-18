@@ -18,7 +18,8 @@ EXCLUDED: dict[ReasonType, frozenset[str]] = {
         "build",
         "dist",
         ".tox",
-        ".mypy_cache"
+        ".mypy_cache",
+        ".pytest_cache"
         }),
     ReasonType.VENDORED: frozenset({
         "third_party",
@@ -133,12 +134,12 @@ class CorpusLoader:
         if is_exclude_step_one:
             return is_exclude_step_one
         size_bytes = path.stat().st_size
-        if size_bytes > self.max_bytes:
-            return ReasonType.TOO_LARGE
         raw = path.read_bytes()
         head = raw[:SNIFF_SIZE]
         if b"\x00" in head:
             return ReasonType.BINARY
+        if size_bytes > self.max_bytes:
+            return ReasonType.TOO_LARGE
         try:
             content = raw.decode(encoding="utf-8")
         except UnicodeDecodeError:
