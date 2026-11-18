@@ -4,7 +4,9 @@ from src.rag.ingestion.tokenizer import TokenCounter
 
 
 class CLI:
-    def __init__(self, root: str, embedding: str = "Qwen/Qwen3-Embedding-0.6B"
+    def __init__(self,
+                 root: str = "data/raw/vllm-0.10.1",
+                 embedding: str = "Qwen/Qwen3-Embedding-0.6B"
                  ) -> None:
         self.root = root
         self.embedding = embedding
