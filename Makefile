@@ -5,8 +5,8 @@ MAIN = -m src
 DATA_ZIP = vllm-0.10.1.zip
 RAW_DIR = data/raw
 DATA_NAME = $(basename $(DATA_ZIP))
-EMBEDDING ?= Qwen/Qwen3-Embedding-0.6B
-ROOT ?= data/raw/vllm-0.10.1
+EMBEDDING = Qwen/Qwen3-Embedding-0.6B
+ROOT = data/raw/vllm-0.10.1
 
 GREEN = \033[32m
 RED   = \033[31m
