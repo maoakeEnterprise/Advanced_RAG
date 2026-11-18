@@ -5,6 +5,8 @@ MAIN = -m src
 DATA_ZIP = vllm-0.10.1.zip
 RAW_DIR = data/raw
 DATA_NAME = $(basename $(DATA_ZIP))
+EMBEDDING ?= Qwen/Qwen3-Embedding-0.6B
+ROOT ?= data/raw/vllm-0.10.1
 
 GREEN = \033[32m
 RED   = \033[31m
@@ -13,7 +15,7 @@ DIM   = \033[2m
 RESET = \033[0m
 
 
-.PHONY: unzip_data install clean
+.PHONY: unzip_data install clean ingest
 
 
 unzip_data: $(RAW_DIR)/$(DATA_NAME)
@@ -36,6 +38,11 @@ install:
 
 run:
 	$(PYTHON) $(MAIN)
+
+ingest: unzip_data
+		$(PYTHON) $(MAIN) ingest \
+			$(if $(ROOT),--root=$(ROOT)) \
+			$(if $(EMBEDDING),--embedding=$(EMBEDDING))
 
 clean:
 	rm -rf $(RAW_DIR)
