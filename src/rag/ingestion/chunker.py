@@ -43,22 +43,31 @@ class Chunker:
 
     def chunk_files(self, files: list[SourceFile]) -> list[Chunk]:
         chunks: list[Chunk] = []
+        rework_chunks: list[Chunk] = []
         for file in files:
-            chunks.extend(self.chunk_file(file=file))
-            n_tokens = self._count_tokens(chunks)
-            if n_tokens > self.max_tokens:
-                pass
+            try:
+                chunks.extend(self.chunk_file(file=file))
+            except Exception as e:
+                print(f"Warning on {file.source} > {e}")
+        self._count_tokens(chunks=chunks)
+        for chunk in chunks:
+            if chunk.n_tokens > self.max_tokens:
+                rework_chunks.extend(self._split_too_long(chunk=chunk))
+            else:
+                rework_chunks.append(chunk)
+        self._fix_duplicate_ids(chunks=rework_chunks)
+        return rework_chunks
 
     def chunk_file(self, file: SourceFile) -> list[Chunk]:
         pass
 
-    def _count_tokens(self, chunks: list[Chunk]) -> int:
+    def _count_tokens(self, chunks: list[Chunk]) -> None:
         pass
 
-    def _split_to_long(self) -> list[Chunk]:
+    def _split_too_long(self, chunk: Chunk) -> list[Chunk]:
         pass
 
-    def _fix_duplicate_is(self) -> None:
+    def _fix_duplicate_ids(self, chunks: list[Chunk]) -> None:
         pass
 
 
