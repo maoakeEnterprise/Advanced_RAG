@@ -1,6 +1,7 @@
 from src.rag.ingestion.tokenizer import TokenCounter
 from src.rag.ingestion.models import (Chunk,
-                                      SourceFile)
+                                      SourceFile,
+                                      FileType)
 
 
 def make_chunk(file: SourceFile,
@@ -40,6 +41,10 @@ class Chunker:
     def __init__(self, counter: TokenCounter, max_tokens: int = 800) -> None:
         self.counter = counter
         self.max_tokens = max_tokens
+        self.python = PythonChunker()
+        self.markdown = MarkdownChunker()
+        self.cuda = CudaChunker()
+        self.config = ConfigChunker()
 
     def chunk_files(self, files: list[SourceFile]) -> list[Chunk]:
         chunks: list[Chunk] = []
@@ -59,29 +64,80 @@ class Chunker:
         return rework_chunks
 
     def chunk_file(self, file: SourceFile) -> list[Chunk]:
-        pass
+        match file.type:
+            case FileType.CODE_PYTHON:
+                return self.python.chunking(file=file)
+            case FileType.DOC_MARKDOWN:
+                return self.markdown.chunking(file=file)
+            case FileType.CODE_CUDA:
+                return self.cuda.chunking(file=file)
+            case FileType.CONFIG:
+                return self.config.chunking(file=file)
+            case _:
+                print(f"IGNORED FILE: {file.source}")
+                return []
 
     def _count_tokens(self, chunks: list[Chunk]) -> None:
-        pass
+        if not chunks:
+            return
+        tokens_list = self.counter.count_batch(
+            texts=[chunk.content for chunk in chunks]
+            )
+        for chunk, n in zip(chunks, tokens_list, strict=True):
+            chunk.n_tokens = n
 
     def _split_too_long(self, chunk: Chunk) -> list[Chunk]:
-        pass
+        chunks: list[Chunk] = []
+        tot_token = 0
+        content_in = ""
+        nb = 0
+        stock_start = 0
+        contents = chunk.content.splitlines(keepends=True)
+        all_tokens = self.counter.count_batch(contents)
+        for content, nb_token in zip(contents, all_tokens):
+            tot_token += nb_token
+            content_in += content
+            if tot_token > self.max_tokens:
+                chunks.append(Chunk(
+                    chunk_id=chunk.chunk_id,
+                    source=chunk.source,
+                    type=chunk.type,
+                    language=chunk.language,
+                    symbol="",
+                    kind="",
+                    start_line=chunk.start_line + stock_start,
+                    end_line=chunk.start_line + nb,
+                    parent=chunk.symbol,
+                    imports=chunk.imports,
+                    is_test=chunk.is_test,
+                    n_tokens=tot_token,
+                    content=content_in
+                ))
+                nb = stock_start + 1
+                tot_token = 0
+                content_in = ""
+            nb += 1
+        return chunks
 
     def _fix_duplicate_ids(self, chunks: list[Chunk]) -> None:
         pass
 
 
 class PythonChunker:
-    pass
+    def chunking(self, file: SourceFile) -> list[Chunk]:
+        pass
 
 
 class MarkdownChunker:
-    pass
+    def chunking(self, file: SourceFile) -> list[Chunk]:
+        pass
 
 
 class CudaChunker:
-    pass
+    def chunking(self, file: SourceFile) -> list[Chunk]:
+        pass
 
 
 class ConfigChunker:
-    pass
+    def chunking(self, file: SourceFile) -> list[Chunk]:
+        pass
