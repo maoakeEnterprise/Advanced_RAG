@@ -88,7 +88,6 @@ class Chunker:
 
     def _split_too_long(self, chunk: Chunk) -> list[Chunk]:
         chunks: list[Chunk] = []
-        is_overflow = False
         tot_token = 0
         content_in = ""
         stock_start = 0
@@ -100,45 +99,25 @@ class Chunker:
                 tot_token += nb_token
                 content_in += content
             else:
-                is_overflow = True
-            if is_overflow:
-                chunks.append(Chunk(
-                    chunk_id=chunk.chunk_id,
-                    source=chunk.source,
-                    type=chunk.type,
-                    language=chunk.language,
-                    symbol=chunk.symbol,
-                    kind=chunk.kind,
-                    start_line=chunk.start_line + stock_start,
-                    end_line=chunk.start_line + i - 1,
-                    parent=chunk.parent,
-                    imports=chunk.imports,
-                    is_test=chunk.is_test,
-                    n_tokens=tot_token,
-                    content=content_in,
-                    top_dir=chunk.top_dir
-                ))
+                if content_in != "":
+                    chunks.append(chunk.model_copy(
+                        update={
+                            "start_line": chunk.start_line + stock_start,
+                            "end_line": chunk.start_line + i - 1,
+                            "n_tokens": tot_token,
+                            "content": content_in
+                        }
+                    ))
                 stock_start = i
-                is_overflow = False
-                tot_token = 0
-                content_in = ""
-                tot_token += nb_token
-                content_in += content
-        chunks.append(Chunk(
-            chunk_id=chunk.chunk_id,
-            source=chunk.source,
-            type=chunk.type,
-            language=chunk.language,
-            symbol=chunk.symbol,
-            kind=chunk.kind,
-            start_line=chunk.start_line + stock_start,
-            end_line=chunk.start_line + i,
-            parent=chunk.parent,
-            imports=chunk.imports,
-            is_test=chunk.is_test,
-            n_tokens=tot_token,
-            content=content_in,
-            top_dir=chunk.top_dir
+                content_in = content
+                tot_token = nb_token
+        chunks.append(chunk.model_copy(
+            update={
+                "start_line": chunk.start_line + stock_start,
+                "end_line": chunk.start_line + i,
+                "n_tokens": tot_token,
+                "content": content_in
+            }
         ))
         return chunks
 
