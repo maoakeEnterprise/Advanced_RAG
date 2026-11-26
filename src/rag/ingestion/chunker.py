@@ -88,35 +88,58 @@ class Chunker:
 
     def _split_too_long(self, chunk: Chunk) -> list[Chunk]:
         chunks: list[Chunk] = []
+        is_overflow = False
         tot_token = 0
         content_in = ""
-        nb = 0
         stock_start = 0
         contents = chunk.content.splitlines(keepends=True)
         all_tokens = self.counter.count_batch(contents)
-        for content, nb_token in zip(contents, all_tokens):
-            tot_token += nb_token
-            content_in += content
-            if tot_token > self.max_tokens:
+        for i, tmp in enumerate(zip(contents, all_tokens)):
+            content, nb_token = tmp
+            if tot_token + nb_token <= self.max_tokens:
+                tot_token += nb_token
+                content_in += content
+            else:
+                is_overflow = True
+            if is_overflow:
                 chunks.append(Chunk(
                     chunk_id=chunk.chunk_id,
                     source=chunk.source,
                     type=chunk.type,
                     language=chunk.language,
-                    symbol="",
-                    kind="",
+                    symbol=chunk.symbol,
+                    kind=chunk.kind,
                     start_line=chunk.start_line + stock_start,
-                    end_line=chunk.start_line + nb,
-                    parent=chunk.symbol,
+                    end_line=chunk.start_line + i - 1,
+                    parent=chunk.parent,
                     imports=chunk.imports,
                     is_test=chunk.is_test,
                     n_tokens=tot_token,
-                    content=content_in
+                    content=content_in,
+                    top_dir=chunk.top_dir
                 ))
-                nb = stock_start + 1
+                stock_start = i
+                is_overflow = False
                 tot_token = 0
                 content_in = ""
-            nb += 1
+                tot_token += nb_token
+                content_in += content
+        chunks.append(Chunk(
+            chunk_id=chunk.chunk_id,
+            source=chunk.source,
+            type=chunk.type,
+            language=chunk.language,
+            symbol=chunk.symbol,
+            kind=chunk.kind,
+            start_line=chunk.start_line + stock_start,
+            end_line=chunk.start_line + i,
+            parent=chunk.parent,
+            imports=chunk.imports,
+            is_test=chunk.is_test,
+            n_tokens=tot_token,
+            content=content_in,
+            top_dir=chunk.top_dir
+        ))
         return chunks
 
     def _fix_duplicate_ids(self, chunks: list[Chunk]) -> None:

@@ -15,7 +15,10 @@ DIM   = \033[2m
 RESET = \033[0m
 
 
-.PHONY: unzip_data install clean ingest
+.PHONY: unzip_data install clean ingest test
+
+test:
+	uv run python -m pytest tests/ -v
 
 
 unzip_data: $(RAW_DIR)/$(DATA_NAME)
