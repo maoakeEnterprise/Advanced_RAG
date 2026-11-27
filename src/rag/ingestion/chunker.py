@@ -91,6 +91,7 @@ class Chunker:
         tot_token = 0
         content_in = ""
         stock_start = 0
+        part = 1
         contents = chunk.content.splitlines(keepends=True)
         all_tokens = self.counter.count_batch(contents)
         for i, tmp in enumerate(zip(contents, all_tokens)):
@@ -105,9 +106,15 @@ class Chunker:
                             "start_line": chunk.start_line + stock_start,
                             "end_line": chunk.start_line + i - 1,
                             "n_tokens": tot_token,
-                            "content": content_in
+                            "content": content_in,
+                            "symbol": (f"{chunk.symbol} (part {part})")
+                            if chunk.symbol
+                            else (f"{chunk.chunk_id} (part {part})"),
+                            "parent": chunk.symbol if chunk.symbol
+                            else chunk.chunk_id
                         }
                     ))
+                    part += 1
                 stock_start = i
                 content_in = content
                 tot_token = nb_token
@@ -116,7 +123,10 @@ class Chunker:
                 "start_line": chunk.start_line + stock_start,
                 "end_line": chunk.start_line + i,
                 "n_tokens": tot_token,
-                "content": content_in
+                "content": content_in,
+                "symbol": (f"{chunk.symbol} (part {part})")
+                if chunk.symbol else (f"{chunk.chunk_id} (part {part})"),
+                "parent": chunk.symbol if chunk.symbol else chunk.chunk_id
             }
         ))
         return chunks
@@ -130,10 +140,10 @@ class Chunker:
                 continue
             base = chunk.chunk_id
             n = counters.get(base, 1)
-            new_id = f"{base}_{n}"
+            new_id = f"{base}#{n}"
             while new_id in seen:
                 n += 1
-                new_id = f"{base}_{n}"
+                new_id = f"{base}#{n}"
             chunk.chunk_id = new_id
             counters[base] = n + 1
             seen.add(new_id)
