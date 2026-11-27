@@ -122,7 +122,21 @@ class Chunker:
         return chunks
 
     def _fix_duplicate_ids(self, chunks: list[Chunk]) -> None:
-        pass
+        counters: dict[str, int] = dict()
+        seen: set[str] = set()
+        for chunk in chunks:
+            if chunk.chunk_id not in seen:
+                seen.add(chunk.chunk_id)
+                continue
+            base = chunk.chunk_id
+            n = counters.get(base, 1)
+            new_id = f"{base}_{n}"
+            while new_id in seen:
+                n += 1
+                new_id = f"{base}_{n}"
+            chunk.chunk_id = new_id
+            counters[base] = n + 1
+            seen.add(new_id)
 
 
 class PythonChunker:
